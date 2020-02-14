@@ -1,0 +1,31 @@
+from pathlib import Path
+import os
+import json
+import requests 
+import itertools  
+
+theDict_path = {}
+theDict = {}
+for dirpath, dirs, files in os.walk("."):
+    for fn in files:
+        try:
+            path = os.path.join(dirpath, fn)
+            size = os.stat(path).st_size    
+            theDict[fn] = size
+            theDict_path[fn] = path         
+        except:
+            pass
+
+list_collect = []
+for item in zip(theDict, theDict_path):
+        d = {"File_name": item[0], "File_size in Bytes": theDict[item[0]], "File_path": theDict_path[item[1]] }    
+        parsed = json.dumps(d, indent=4, sort_keys=True)
+        parsed1 = json.loads(parsed)
+        list_collect.append(parsed1)      #Appending all data in one list so could be Posted through request method.
+        headers = {'Content-type': 'application/json'}
+        url = "https://jsonplaceholder.typicode.com/posts"
+        response = requests.post(url, json=parsed1, headers=headers) 
+        #print("Status Code: ",response.status_code)                              #Status
+        print(response.text)                            		#To see the output which must be stored at the endpoint
+
+print("Status Code: ",response.status_code)     
